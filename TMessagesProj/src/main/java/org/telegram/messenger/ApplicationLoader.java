@@ -346,15 +346,6 @@ public class ApplicationLoader extends Application {
         }, 1000);
     }
 
-    private boolean checkPlayServices() {
-        try {
-            int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-            return resultCode == ConnectionResult.SUCCESS;
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
-        return true;
-    }
 
     private static long lastNetworkCheck = -1;
     private static void ensureCurrentNetworkGet() {

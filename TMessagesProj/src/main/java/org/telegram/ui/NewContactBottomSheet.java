@@ -80,6 +80,7 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
     private boolean ignoreOnTextChange;
     private boolean ignoreOnPhoneChange;
     private boolean ignoreOnPhoneChangePaste;
+    private int countryState;
     private boolean ignoreSelection;
     private boolean donePressed;
     private String initialPhoneNumber;
@@ -87,11 +88,13 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
     private String initialFirstName;
     private String initialLastName;
 
+    private final static int done_button = 1;
     BaseFragment parentFragment;
     int classGuid;
     private AnimatedPhoneNumberEditText codeField;
     private View codeDividerView;
     private AnimatedPhoneNumberEditText phoneField;
+    private CountrySelectActivity.Country currentCountry;
     private String countryCodeForHint;
     private int wasCountryHintIndex;
     private TextView countryFlag;
@@ -131,7 +134,7 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
         firstNameField.getEditText().setImeOptions(EditorInfo.IME_ACTION_NEXT);
         firstNameField.setHint(LocaleController.getString("FirstName", R.string.FirstName));
         if (initialFirstName != null) {
-            firstNameField.getEditText().setText(initialFirstName);
+            firstNameField.setText(initialFirstName);
             initialFirstName = null;
         }
         frameLayout.addView(firstNameField, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 58, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
@@ -150,7 +153,7 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
         lastNameField.getEditText().setImeOptions(EditorInfo.IME_ACTION_NEXT);
         lastNameField.setHint(LocaleController.getString("LastName", R.string.LastName));
         if (initialLastName != null) {
-            lastNameField.getEditText().setText(initialLastName);
+            lastNameField.setText(initialLastName);
             initialLastName = null;
         }
         frameLayout.addView(lastNameField, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 58, Gravity.LEFT | Gravity.TOP, 0, 68, 0, 0));
@@ -257,6 +260,7 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
                 if (text.length() == 0) {
                     setCountryButtonText(null);
                     phoneField.setHintText(null);
+                    countryState = LoginActivity.COUNTRY_STATE_EMPTY;
                 } else {
                     CountrySelectActivity.Country country;
                     boolean ok = false;
@@ -335,15 +339,18 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
 
                     if (country != null) {
                         ignoreSelection = true;
+                        currentCountry = country;
                         setCountryHint(text, country);
+                        countryState = LoginActivity.COUNTRY_STATE_NOT_SET_OR_VALID;
                     } else {
                         setCountryButtonText(null);
                         phoneField.setHintText(null);
+                        countryState = LoginActivity.COUNTRY_STATE_INVALID;
                     }
                     if (!ok) {
                         codeField.setSelection(codeField.getText().length());
                     }
-                    if (textToSet != null && textToSet.length() != 0) {
+                    if (textToSet != null) {
                         phoneField.requestFocus();
                         phoneField.setText(textToSet);
                         phoneField.setSelection(phoneField.length());
@@ -587,11 +594,13 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
                     }
                     if (country1 != null) {
                         codeField.setText(country1.code);
+                        countryState = 0;
                     }
                 }
             }
             if (codeField.length() == 0) {
                 phoneField.setHintText(null);
+                countryState = 1;
             }
         }
 
@@ -689,7 +698,6 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
     public void show() {
         super.show();
         firstNameField.getEditText().requestFocus();
-        firstNameField.getEditText().setSelection(firstNameField.getEditText().length());
         AndroidUtilities.runOnUIThread(() -> {
             AndroidUtilities.showKeyboard(firstNameField.getEditText());
         }, 50);
@@ -730,9 +738,9 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
         }
     }
 
-    public void setInitialPhoneNumber(String value, boolean withCountryCode) {
+    public void setInitialPhoneNumber(String value, boolean withCoutryCode) {
         initialPhoneNumber = value;
-        initialPhoneNumberWithCountryCode = withCountryCode;
+        initialPhoneNumberWithCountryCode = withCoutryCode;
 
         if (!TextUtils.isEmpty(initialPhoneNumber)) {
             TLRPC.User user = UserConfig.getInstance(currentAccount).getCurrentUser();
@@ -757,16 +765,8 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
     }
 
     public void setInitialName(String firstName, String lastName) {
-        if (firstNameField != null) {
-            firstNameField.getEditText().setText(firstName);
-        } else {
-            initialFirstName = firstName;
-        }
-        if (lastNameField != null) {
-            lastNameField.getEditText().setText(lastName);
-        } else {
-            initialLastName = lastName;
-        }
+        initialFirstName = firstName;
+        initialLastName = lastName;
     }
 
     private void setCountryHint(String code, CountrySelectActivity.Country country) {
@@ -856,6 +856,8 @@ public class NewContactBottomSheet extends BottomSheet implements AdapterView.On
         String code = country.code;
         codeField.setText(code);
         setCountryHint(code, country);
+        currentCountry = country;
+        countryState = LoginActivity.COUNTRY_STATE_NOT_SET_OR_VALID;
         ignoreOnTextChange = false;
     }
 

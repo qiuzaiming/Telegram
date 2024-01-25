@@ -176,8 +176,6 @@ public class NotificationCenter {
     public static final int recordStarted = totalEvents++;
     public static final int recordStartError = totalEvents++;
     public static final int recordStopped = totalEvents++;
-    public static final int recordPaused = totalEvents++;
-    public static final int recordResumed = totalEvents++;
     public static final int screenshotTook = totalEvents++;
     public static final int albumsDidLoad = totalEvents++;
     public static final int audioDidSent = totalEvents++;
@@ -225,9 +223,7 @@ public class NotificationCenter {
     public static final int unconfirmedAuthUpdate = totalEvents++;
     public static final int dialogPhotosUpdate = totalEvents++;
     public static final int channelRecommendationsLoaded = totalEvents++;
-    public static final int savedMessagesDialogsUpdate = totalEvents++;
-    public static final int savedReactionTagsUpdate = totalEvents++;
-    public static final int userIsPremiumBlockedUpadted = totalEvents++;
+    public static final int savedMessagesUpdate = totalEvents++;
 
     //global
     public static final int pushMessagesUpdated = totalEvents++;
@@ -741,35 +737,29 @@ public class NotificationCenter {
         }
     }
 
-    public Runnable listen(View view, final int id, final Utilities.Callback<Object[]> callback) {
-        if (view == null || callback == null) {
-            return () -> {};
+    public static void listenEmojiLoading(View view) {
+        if (view == null) {
+            return;
         }
-        final NotificationCenterDelegate delegate = (_id, account, args) -> {
-            if (_id == id) {
-                callback.run(args);
+
+        final NotificationCenterDelegate delegate = (id, account, args) -> {
+            if (id == NotificationCenter.emojiLoaded) {
+                if (view != null && view.isAttachedToWindow()) {
+                    view.invalidate();
+                }
             }
         };
-        final View.OnAttachStateChangeListener viewListener = new View.OnAttachStateChangeListener() {
+        view.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View view) {
-                NotificationCenter.getGlobalInstance().addObserver(delegate, id);
+                NotificationCenter.getGlobalInstance().addObserver(delegate, NotificationCenter.emojiLoaded);
             }
+
             @Override
             public void onViewDetachedFromWindow(View view) {
-                NotificationCenter.getGlobalInstance().removeObserver(delegate, id);
+                NotificationCenter.getGlobalInstance().removeObserver(delegate, NotificationCenter.emojiLoaded);
             }
-        };
-        view.addOnAttachStateChangeListener(viewListener);
-
-        return () -> {
-            view.removeOnAttachStateChangeListener(viewListener);
-            NotificationCenter.getGlobalInstance().removeObserver(delegate, id);
-        };
-    }
-
-    public static void listenEmojiLoading(View view) {
-        getGlobalInstance().listen(view, NotificationCenter.emojiLoaded, args -> view.invalidate());
+        });
     }
 
     public void listenOnce(int id, Runnable callback) {

@@ -123,7 +123,6 @@ public class BlurBehindDrawable {
             canvas.drawBitmap(bitmap[0], 0, 0, emptyPaint);
             canvas.restore();
             wasDraw = true;
-
             canvas.drawColor(0x1a000000);
         }
         canvas.restore();

@@ -36,7 +36,6 @@ import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.CombinedDrawable;
 import org.telegram.ui.Components.LayoutHelper;
-import org.telegram.ui.Components.Reactions.ReactionsLayoutInBubble;
 import org.telegram.ui.Components.RecyclerListView;
 
 import java.text.SimpleDateFormat;
@@ -787,20 +786,14 @@ public class FiltersView extends RecyclerListView {
 
     public static class MediaFilterData {
 
-        public ReactionsLayoutInBubble.VisibleReaction reaction;
-
-        public int iconResFilled;
+        public final int iconResFilled;
         public int titleResId;
         private String title;
-        public int filterType;
-        public TLRPC.MessagesFilter filter;
+        public final int filterType;
+        public final TLRPC.MessagesFilter filter;
         public TLObject chat;
         public DateData dateData;
         public boolean removable = true;
-
-        public MediaFilterData(ReactionsLayoutInBubble.VisibleReaction reaction) {
-            this.reaction = reaction;
-        }
 
         public MediaFilterData(int iconResFilled, String title, TLRPC.MessagesFilter filter, int filterType) {
             this.iconResFilled = iconResFilled;

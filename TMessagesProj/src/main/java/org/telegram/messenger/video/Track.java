@@ -11,7 +11,6 @@ package org.telegram.messenger.video;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.util.Log;
 
 import com.coremedia.iso.boxes.AbstractMediaHeaderBox;
 import com.coremedia.iso.boxes.SampleDescriptionBox;
@@ -331,8 +330,6 @@ public class Track {
     }
 
     public void prepare() {
-        duration = 0;
-
         ArrayList<SamplePresentationTime> original = new ArrayList<>(samplePresentationTimes);
         Collections.sort(samplePresentationTimes, (o1, o2) -> {
             if (o1.presentationTime > o2.presentationTime) {

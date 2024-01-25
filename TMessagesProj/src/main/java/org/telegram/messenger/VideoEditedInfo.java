@@ -62,9 +62,6 @@ public class VideoEditedInfo {
     public boolean isStory;
     public StoryEntry.HDRInfo hdrInfo;
 
-    public Bitmap thumb;
-    public boolean notReadyYet;
-
     public Integer gradientTopColor, gradientBottomColor;
     public int account;
     public boolean isDark;

@@ -33,8 +33,6 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 
-import java.util.Arrays;
-import java.util.Locale;
 
 public class DualCameraView extends CameraView implements CameraController.ErrorCallback {
 

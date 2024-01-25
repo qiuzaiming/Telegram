@@ -8985,9 +8985,9 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
         private final int currentAccount;
         private final long dialogId;
-        private final long threadId;
+        private final int threadId;
 
-        public ChooseStickerActionTracker(int currentAccount, long dialogId, long threadId) {
+        public ChooseStickerActionTracker(int currentAccount, long dialogId, int threadId) {
             this.currentAccount = currentAccount;
             this.dialogId = dialogId;
             this.threadId = threadId;

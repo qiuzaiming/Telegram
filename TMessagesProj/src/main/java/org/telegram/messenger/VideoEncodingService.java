@@ -31,12 +31,8 @@ public class VideoEncodingService extends Service implements NotificationCenter.
 
     public static void start(boolean cancelled) {
         if (instance == null) {
-            try {
-                Intent intent = new Intent(ApplicationLoader.applicationContext, VideoEncodingService.class);
-                ApplicationLoader.applicationContext.startService(intent);
-            } catch (Exception e) {
-                FileLog.e(e);
-            }
+            Intent intent = new Intent(ApplicationLoader.applicationContext, VideoEncodingService.class);
+            ApplicationLoader.applicationContext.startService(intent);
         } else if (cancelled) {
             MediaController.VideoConvertMessage messageInController = MediaController.getInstance().getCurrentForegroundConverMessage();
             if (instance.currentMessage != messageInController) {

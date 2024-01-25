@@ -202,7 +202,7 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
         }
 
         getContactsController().checkInviteText();
-        getContactsController().reloadContactsStatusesMaybe(false);
+        getContactsController().reloadContactsStatusesMaybe();
         MessagesController.getInstance(currentAccount).getStoriesController().loadHiddenStories();
 
 

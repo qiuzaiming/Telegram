@@ -42,7 +42,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -55,9 +54,6 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator;
-
-import com.google.zxing.common.detector.MathUtils;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -66,7 +62,6 @@ import org.telegram.messenger.DispatchQueue;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.Utilities;
@@ -100,8 +95,6 @@ import javax.microedition.khronos.opengles.GL;
 @SuppressLint("NewApi")
 public class CameraView extends FrameLayout implements TextureView.SurfaceTextureListener, CameraController.ICameraView {
 
-    public boolean WRITE_TO_FILE_IN_BACKGROUND = false;
-
     public boolean isStory;
     private Size[] previewSize = new Size[2];
     private Size[] pictureSize = new Size[2];
@@ -113,15 +106,11 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
     private CameraSession[] cameraSession = new CameraSession[2];
     private boolean inited;
     private CameraViewDelegate delegate;
-    private int clipTop;
-    private int clipBottom;
     private boolean isFrontface;
     private Matrix txform = new Matrix();
     private Matrix matrix = new Matrix();
     private int focusAreaSize;
     private Drawable thumbDrawable;
-
-    private boolean useMaxPreview;
 
     private long lastDrawTime;
     private float focusProgress = 1.0f;
@@ -132,14 +121,11 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
     private int cy;
     private Paint outerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint innerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private boolean optimizeForBarcode;
     File recordFile;
 
     private DecelerateInterpolator interpolator = new DecelerateInterpolator();
     private volatile int surfaceWidth;
     private volatile int surfaceHeight;
-
-    private File cameraFile;
 
     boolean firstFrameRendered;
     boolean firstFrame2Rendered;
@@ -237,7 +223,6 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
                 blurredStubView.setRotationY(0);
 
                 if (!flipHalfReached) {
-//                    blurredStubView.setAlpha(1f);
                     flipHalfReached = true;
                 }
                 invalidate();
@@ -284,10 +269,6 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
                 cameraThread.sendMessage(handler.obtainMessage(cameraThread.BLUR_CAMERA1), 0);
             }
             CameraController.getInstance().close(cameraSession[0], null, null, () -> {
-//                inited = false;
-//                synchronized (layoutLock) {
-//                    firstFrameRendered = false;
-//                }
                 initFirstCameraAfterSecond = true;
                 updateCameraInfoSize(1);
                 if (handler != null) {
@@ -419,8 +400,7 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
         textureInited = true;
     }
 
-    public void setOptimizeForBarcode(boolean value) {
-        optimizeForBarcode = value;
+    public void setOptimizeForBarcode() {
         if (cameraSession[0] != null) {
             cameraSession[0].setOptimizeForBarcode(true);
         }
@@ -541,10 +521,6 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
 
     public TextureView getTextureView() {
         return textureView;
-    }
-
-    public void setUseMaxPreview(boolean value) {
-        useMaxPreview = value;
     }
 
     public boolean hasFrontFaceCamera() {
@@ -819,14 +795,6 @@ public class CameraView extends FrameLayout implements TextureView.SurfaceTextur
         } else {
             textureView.setAlpha(show ? 1 : 0);
         }
-    }
-
-    public void setClipTop(int value) {
-        clipTop = value;
-    }
-
-    public void setClipBottom(int value) {
-        clipBottom = value;
     }
 
     private final Runnable updateRotationMatrix = () -> {

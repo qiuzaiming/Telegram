@@ -11,10 +11,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
 
-import com.google.android.exoplayer2.util.Log;
-
-import org.telegram.ui.Cells.ChatMessageCell;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -72,9 +68,8 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
         } else {
             for (int i = 0; i < childCount; i++) {
                 View child = getChildAt(i);
-                final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
-                if (child.getBottom() + params.bottomMargin > scrollingOffset
-                        || child.getTop() + child.getHeight() > scrollingOffset) {
+                if (mOrientationHelper.getDecoratedEnd(child) > scrollingOffset
+                        || mOrientationHelper.getTransformedEndWithDecoration(child) > scrollingOffset) {
                     // stop here
                     recycleChildren(recycler, 0, i);
                     return;
@@ -120,15 +115,12 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
         final int otherDirSpecMode = mOrientationHelper.getModeInOther();
 
         final boolean layingOutInPrimaryDirection = layoutState.mItemDirection == LayoutState.ITEM_DIRECTION_TAIL;
+        boolean working = true;
         result.mConsumed = 0;
+        int yOffset = 0;
 
         int startPosition = layoutState.mCurrentPosition;
-        if (
-            mShouldReverseLayout &&
-            layoutState.mLayoutDirection != LayoutState.LAYOUT_START &&
-            hasSiblingChild(layoutState.mCurrentPosition) &&
-            findViewByPosition(layoutState.mCurrentPosition + 1) == null
-        ) {
+        if (layoutState.mLayoutDirection != LayoutState.LAYOUT_START && hasSiblingChild(layoutState.mCurrentPosition) && findViewByPosition(layoutState.mCurrentPosition + 1) == null) {
             if (hasSiblingChild(layoutState.mCurrentPosition + 1)) {
                 layoutState.mCurrentPosition += 3;
             } else {
@@ -152,14 +144,18 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
             layoutState.mCurrentPosition = backupPosition;
         }
 
-        boolean working = true;
         while (working) {
             int count = 0;
+            int consumedSpanCount = 0;
             int remainingSpan = mSpanCount;
+
             working = !additionalViews.isEmpty();
+            int firstPositionStart = layoutState.mCurrentPosition;
+
             while (count < mSpanCount && layoutState.hasMore(state) && remainingSpan > 0) {
                 int pos = layoutState.mCurrentPosition;
                 final int spanSize = getSpanSize(recycler, state, pos);
+
                 remainingSpan -= spanSize;
                 if (remainingSpan < 0) {
                     break;
@@ -175,6 +171,7 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
                 if (view == null) {
                     break;
                 }
+                consumedSpanCount += spanSize;
                 mSet[count] = view;
                 count++;
                 if (layoutState.mLayoutDirection == LayoutState.LAYOUT_START && remainingSpan <= 0 && hasSiblingChild(pos)) {
@@ -239,11 +236,9 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
             }
 
             int left, right, top, bottom;
-            boolean fromOppositeSide = shouldLayoutChildFromOpositeSide(mSet[0]);
-            if (
-                fromOppositeSide && layoutState.mLayoutDirection == LayoutState.LAYOUT_START ||
-                !fromOppositeSide && layoutState.mLayoutDirection == LayoutState.LAYOUT_END
-            ) {
+
+            boolean fromOpositeSide = shouldLayoutChildFromOpositeSide(mSet[0]);
+            if (fromOpositeSide && layoutState.mLayoutDirection == LayoutState.LAYOUT_START || !fromOpositeSide && layoutState.mLayoutDirection == LayoutState.LAYOUT_END) {
                 if (layoutState.mLayoutDirection == LayoutState.LAYOUT_START) {
                     bottom = layoutState.mOffset - result.mConsumed;
                     top = bottom - maxSize;
@@ -289,7 +284,7 @@ public class GridLayoutManagerFixed extends GridLayoutManager {
                         left -= right;
                     }
                     layoutDecoratedWithMargins(view, left, top, left + right, bottom);
-                    if (layoutState.mLayoutDirection == LayoutState.LAYOUT_END) {
+                    if (layoutState.mLayoutDirection != LayoutState.LAYOUT_START) {
                         left += right;
                     }
                     if (params.isItemRemoved() || params.isItemChanged()) {

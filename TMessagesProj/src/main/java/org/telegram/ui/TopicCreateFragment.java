@@ -79,10 +79,10 @@ public class TopicCreateFragment extends BaseFragment {
 
     int iconColor;
 
-    public static TopicCreateFragment create(long chatId, long topicId) {
+    public static TopicCreateFragment create(long chatId, int topicId) {
         Bundle bundle = new Bundle();
         bundle.putLong("chat_id", chatId);
-        bundle.putLong("topic_id", topicId);
+        bundle.putInt("topic_id", topicId);
         return new TopicCreateFragment(bundle);
     }
 

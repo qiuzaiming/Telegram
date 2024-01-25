@@ -135,8 +135,8 @@ public class MediaActivity extends BaseFragment implements SharedMediaLayout.Sha
         }
         if (this.sharedMediaPreloader == null) {
             this.sharedMediaPreloader = new SharedMediaLayout.SharedMediaPreloader(this);
+            this.sharedMediaPreloader.addDelegate(this);
         }
-        this.sharedMediaPreloader.addDelegate(this);
         return super.onFragmentCreate();
     }
 
@@ -537,9 +537,6 @@ public class MediaActivity extends BaseFragment implements SharedMediaLayout.Sha
             hideFloatingButton(true, false);
         }
 
-        if (type == TYPE_MEDIA && dialogId == getUserConfig().getClientUserId() && !getMessagesController().getSavedMessagesController().unsupported && getMessagesController().getSavedMessagesController().getAllCount() > 0) {
-            initialTab = SharedMediaLayout.TAB_SAVED_DIALOGS;
-        }
         sharedMediaLayout = new SharedMediaLayout(context, dialogId, sharedMediaPreloader, 0, null, currentChatInfo, currentUserInfo, initialTab, this, new SharedMediaLayout.Delegate() {
             @Override
             public void scrollToSharedMedia() {
@@ -585,7 +582,7 @@ public class MediaActivity extends BaseFragment implements SharedMediaLayout.Sha
 
             @Override
             protected boolean canShowSearchItem() {
-                return type != TYPE_STORIES && type != TYPE_ARCHIVED_CHANNEL_STORIES;
+                return false;
             }
 
             @Override
@@ -612,11 +609,6 @@ public class MediaActivity extends BaseFragment implements SharedMediaLayout.Sha
             @Override
             protected boolean includeStories() {
                 return type == TYPE_STORIES || type == TYPE_ARCHIVED_CHANNEL_STORIES;
-            }
-
-            @Override
-            protected boolean includeSavedDialogs() {
-                return type == TYPE_MEDIA && dialogId == getUserConfig().getClientUserId();
             }
 
             @Override
@@ -943,12 +935,6 @@ public class MediaActivity extends BaseFragment implements SharedMediaLayout.Sha
                 calendarItem.setAlpha(calendarAvailable ? 1f : .5f);
             }
 
-            return;
-        }
-        if (id == SharedMediaLayout.TAB_SAVED_DIALOGS) {
-            showSubtitle(i, true, true);
-            int count = getMessagesController().getSavedMessagesController().getAllCount();
-            subtitleTextView[i].setText(LocaleController.formatPluralString("SavedDialogsTabCount", count), animated);
             return;
         }
         if (id < 0 || id < mediaCount.length && mediaCount[id] < 0) {
